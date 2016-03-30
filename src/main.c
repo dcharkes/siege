@@ -510,7 +510,7 @@ main(int argc, char *argv[])
     );
     fprintf(stderr, "Elapsed time:\t\t%12.2f secs\n",        data_get_elapsed(data));
     fprintf(stderr, "Data transferred:\t%12.2f MB\n",        data_get_megabytes(data)); /*%12llu*/
-    fprintf(stderr, "Response time:\t\t%12.2f secs\n",       data_get_response_time(data));
+    fprintf(stderr, "Response time:\t\t%12.4f secs\n",       data_get_response_time(data));
     fprintf(stderr, "Transaction rate:\t%12.2f trans/sec\n", data_get_transaction_rate(data));
     fprintf(stderr, "Throughput:\t\t%12.2f MB/sec\n",        data_get_throughput(data));
     fprintf(stderr, "Concurrency:\t\t%12.2f\n",              data_get_concurrency(data));
