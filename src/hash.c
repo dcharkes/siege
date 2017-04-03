@@ -27,7 +27,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <hash.h>
-#include <joedog/joedog.h>
+#include <memory.h>
 #include <joedog/defs.h>
 
 typedef struct NODE
@@ -271,7 +271,9 @@ hash_destroy(HASH this)
   int x;
   NODE *t1, *t2;
 
-  if (this == NULL) return this;
+  if (this == NULL) {
+    return this;
+  } 
 
   if (this->free == NULL) {
     this->free = free;

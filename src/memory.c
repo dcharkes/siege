@@ -1,8 +1,7 @@
 /**
  * Memory handling
- * Library: joedog
  * 
- * Copyright (C) 2000-2013 by
+ * Copyright (C) 2000-2016 by
  * Jeffrey Fulmer - <jeff@joedog.org>
  * This file is distributed as part of Siege 
  *

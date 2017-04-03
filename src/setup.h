@@ -87,11 +87,6 @@ char *strchr (), *strrchr ();
 # include <errno.h>
 #endif /* HAVE_ERRNO_H */
 
-#ifndef HAVE_SNPRINTF
-# define portable_snprintf  snprintf
-# define portable_vsnprintf vsnprintf
-#endif
-
 #ifndef  PTHREAD_CREATE_JOINABLE
 # define PTHREAD_CREATE_JOINABLE  0
 #endif /*PTHREAD_CREATE_JOINABLE*/ 
@@ -117,9 +112,7 @@ int strlen();
 #include <auth.h>
 #include <array.h>
 #include <cookies.h>
-#include <joedog/joedog.h>
 #include <joedog/boolean.h>
-#include <joedog/joepath.h>
 
 #define  MXCHLD         1024
 #define  MSG_NOERROR    010000
@@ -186,6 +179,7 @@ struct CONFIG
   BOOLEAN chunked;      /* boolean, accept chunked encoding        */
   BOOLEAN unique;       /* create unique files for upload          */
   BOOLEAN get;          /* get header information for debugging    */ 
+  BOOLEAN print;        /* get header and page for debugging       */ 
   BOOLEAN mark;         /* signifies a log file mark req.          */ 
   char    *markstr;     /* user defined string value to mark file  */
   int     protocol;     /* 0=HTTP/1.0; 1=HTTP/1.1                  */

@@ -1,9 +1,9 @@
 /**
- * Thread pool
+ * Memory handling
  *
- * Copyright (C) 2003-2013 by
+ * Copyright (C) 2000-2016 by
  * Jeffrey Fulmer - <jeff@joedog.org>, et al.
- * This file is distributed as part of Siege
+ * This file is distributed as part of Siege 
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,33 +18,17 @@
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- *--
- */
-#ifndef __CREW_H
-#define __CREW_H
+ */ 
+#ifndef MEMORY_H
+#define MEMORY_H
 
-#include <pthread.h>
-#include <joedog/boolean.h>
+#include <stdlib.h>
 
-typedef struct work
-{
-  void          (*routine)();
-  void          *arg;
-  struct work   *next;
-} WORK;
+char * xstrdup(const char *str); 
+char * xstrcat(const char *arg1, ...);
+void * xrealloc(void *, size_t);
+void * xmalloc (size_t);
+void * xcalloc (size_t, size_t);  
+void xfree(void *ptr);
 
-typedef struct CREW_T *CREW;
-
-CREW    new_crew(int size, int maxsize, BOOLEAN block);
-BOOLEAN crew_add(CREW this, void (*routine)(), void *arg); 
-BOOLEAN crew_cancel(CREW this);
-BOOLEAN crew_join(CREW this, BOOLEAN finish, void **payload);
-void    crew_destroy(CREW this);
-
-void    crew_set_shutdown(CREW this, BOOLEAN shutdown);
-
-int     crew_get_size(CREW this);
-int     crew_get_total(CREW this);
-BOOLEAN crew_get_shutdown(CREW this);
-
-#endif/*__CREW_H*/
+#endif /* MEMORY_H */

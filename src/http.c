@@ -32,6 +32,8 @@
 #include <util.h>
 #include <load.h>
 #include <page.h>
+#include <memory.h>
+#include <notify.h>
 #include <response.h>
 #include <joedog/defs.h>
 
@@ -149,7 +151,7 @@ http_get(CONN *C, URL U)
    * Set the protocol and keepalive strings
    * based on configuration conditions....
    */
-  if (my.protocol == FALSE || my.get == TRUE) {
+  if (my.protocol == FALSE || my.get == TRUE || my.print == TRUE) {
     snprintf(protocol, sizeof(protocol), "HTTP/1.0");
   } else {
     snprintf(protocol, sizeof(protocol), "HTTP/1.1");
@@ -213,7 +215,7 @@ http_get(CONN *C, URL U)
    request = (char*)xmalloc(mlen);
    memset(request, '\0', mlen);
    memset(encoding, '\0', sizeof(encoding));
-   if (! my.get) {
+   if (! my.get || ! my.print) {
      snprintf(encoding, sizeof(encoding), "Accept-Encoding: %s\015\012", my.encoding); 
    }
 
@@ -248,7 +250,7 @@ http_get(CONN *C, URL U)
    * XXX: I hate to use a printf here (as opposed to echo) but we
    * don't want to preface the headers with [debug] in debug mode
    */
-  if ((my.debug || my.get) && !my.quiet) { printf("%s\n", request); fflush(stdout); }
+  if ((my.debug || my.get || my.print) && !my.quiet) { printf("%s\n", request); fflush(stdout); }
   
   if (rlen == 0 || rlen > mlen) { 
     NOTIFY(FATAL, "HTTP %s: request buffer overrun!", url_get_method_name(U));
@@ -309,7 +311,7 @@ http_post(CONN *C, URL U)
    * Set the protocol and keepalive strings
    * based on configuration conditions.... 
    */
-  if (my.protocol == FALSE || my.get == TRUE) { 
+  if (my.protocol == FALSE || my.get == TRUE || my.print == TRUE) { 
     snprintf(protocol, sizeof(protocol), "HTTP/1.0");
   } else {
     snprintf(protocol, sizeof(protocol), "HTTP/1.1");
@@ -373,7 +375,7 @@ http_post(CONN *C, URL U)
    request = (char*)xmalloc(mlen);
    memset(request, '\0', mlen);
    memset(encoding, '\0', sizeof(encoding));
-   if (! my.get) {
+   if (! my.get || ! my.print) {
      snprintf(encoding, sizeof(encoding), "Accept-Encoding: %s\015\012", my.encoding); 
    }
 
@@ -408,7 +410,7 @@ http_post(CONN *C, URL U)
   }
   rlen += url_get_postlen(U);
  
-  if (my.get || my.debug) printf("%s\n\n", request);
+  if (my.get || my.debug || my.print) printf("%s\n\n", request);
 
   if (rlen == 0 || rlen > mlen) {
     NOTIFY(FATAL, "HTTP %s: request buffer overrun! Unable to continue...", url_get_method_name(U)); 
@@ -438,15 +440,15 @@ http_read_headers(CONN *C, URL U)
   
   while (TRUE) {
     x = 0;
-    memset(&line, '\0', MAX_COOKIE_SIZE);
+    //memset(&line, '\0', MAX_COOKIE_SIZE); //VL issue #4
     while ((n = socket_read(C, &c, 1)) == 1) {
       if (x < MAX_COOKIE_SIZE - 1)
         line[x] = c; 
       else 
         line[x] = '\n';
-      echo("%c", c);  
-      if ((line[0] == '\n') || (line[1] == '\n')) { 
-        return resp;
+      echo("%c", c);
+      if (x <= 1 && line[x] == '\n') { //VL issue #4, changed from (line[0] == '\n' || line[1] == '\n')
+			return resp; 
       }
       if (line[x] == '\n') break;
       x ++;
@@ -585,11 +587,21 @@ http_read(CONN *C, RESPONSE resp)
   char   *ptr = NULL;
   char   *tmp = NULL;
   size_t size = MAXFILE; 
-  pthread_mutex_lock(&__mutex);
 
-  if (C == NULL) NOTIFY(FATAL, "Connection is NULL! Unable to proceed"); 
+  if (C == NULL) {
+	  NOTIFY(FATAL, "Connection is NULL! Unable to proceed"); 
+	  return 0;
+  }
+
+  if (C->content.length == 0) //VL
+	  return 0;
+  else if (C->content.length == (size_t)~0L)
+	  C->content.length = 0; //not to break code below...
+  
   memset(dest, '\0', sizeof dest);
 
+  //pthread_mutex_lock(&__mutex);  //VL - moved
+  
   if (C->content.length > 0) {
     length = C->content.length;
     ptr    = xmalloc(length+1);
@@ -610,9 +622,10 @@ http_read(CONN *C, RESPONSE resp)
 
     do {
       chunk = http_chunk_size(C);
-      if (chunk == 0)
+      if (chunk == 0){
+        socket_readline(C, C->chkbuf, sizeof(C->chkbuf)); //VL - issue #3
         break;
-      else if (chunk < 0) {
+      } else if (chunk < 0) {
         chunk = 0;
         continue;
       }  
@@ -646,11 +659,13 @@ http_read(CONN *C, RESPONSE resp)
     do {
       n = socket_read(C, ptr, size);
       bytes += n;
-      if (n <= 0) break;
+      if (n <= 0) { 
+        break;
+      }
     } while (TRUE);
   }
 
-  if(response_get_content_encoding(resp) == GZIP) {
+  if (response_get_content_encoding(resp) == GZIP) {
     __gzip_inflate(MAX_WBITS+32, ptr, bytes, dest, sizeof(dest));
   }
   if (response_get_content_encoding(resp) == DEFLATE) {
@@ -663,7 +678,7 @@ http_read(CONN *C, RESPONSE resp)
   }
   xfree(ptr);
   echo ("\n");
-  pthread_mutex_unlock(&__mutex);
+  //pthread_mutex_unlock(&__mutex);
   return bytes;
 }
 

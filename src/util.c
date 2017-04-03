@@ -25,6 +25,9 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <fcntl.h>
+#include <notify.h>
+#include <memory.h>
+#include <util.h>
 #include <joedog/boolean.h>
 #include <joedog/defs.h>
 
@@ -41,13 +44,13 @@ parse_time(char *p)
   size_t x = 0;
   my.time = my.secs = 0;
 
-  while(ISDIGIT(p[x]))
+  while (ISDIGIT(p[x]))
     x++;
   if (x==0) return;
   my.time = atoi(substring(p, 0, x));
 
-  for(; x < strlen(p); x ++)
-    switch(TOLOWER(p[x])){
+  for (; x < strlen(p); x ++)
+    switch (TOLOWER(p[x])) {
       case 's':
         my.secs = my.time;
         my.time = 1;
@@ -63,11 +66,40 @@ parse_time(char *p)
       default:
         break;
     }
-  if((my.time > 0) && (my.secs <= 0)){
+  if ((my.time > 0) && (my.secs <= 0)) {
     my.secs = my.time * 60;
   }
 
   return;
+}
+
+char *
+substring(char *str, int start, int len)
+{
+  int   i;
+  char  *ret;
+  char  *res;
+  char  *ptr;
+  char  *end;
+
+  if ((len < 1) || (start < 0) || (start > (int)strlen (str)))
+    return NULL;
+
+  if (start+len > (int)strlen(str))
+    len = strlen(str) - start;
+
+  ret = xmalloc(len+1);
+  res = ret;
+  ptr = str;
+  end = str;
+
+  for (i = 0; i < start; i++, ptr++) ;
+  for (i = 0; i < start+len; i++, end++) ;
+  while (ptr < end)
+    *res++ = *ptr++;
+
+  *res = 0;
+  return ret;
 }
 
 BOOLEAN
@@ -80,7 +112,7 @@ okay(int code)
 BOOLEAN
 strmatch(char *option, char *param)
 {
-  if(!strncasecmp(option,param,strlen(param))&&strlen(option)==strlen(param))
+  if (!strncasecmp(option,param,strlen(param))&&strlen(option)==strlen(param))
     return TRUE;
   else
     return FALSE;
@@ -113,7 +145,7 @@ uppercase(char *s, size_t len){
   c = (unsigned char*)s;
   e = c+len;
 
-  while(c < e){
+  while (c < e) {
     *c = TOUPPER((unsigned char)(*c));
     c++;
   }
@@ -128,7 +160,7 @@ lowercase(char *s, size_t len){
   c = (unsigned char*)s;
   e = c+len;
 
-  while(c < e){
+  while (c < e) {
     *c = TOLOWER((unsigned char)(*c));
     c++;
   }
@@ -204,6 +236,13 @@ pthread_usleep_np(unsigned long usec)
   usleep(usec);
 #endif
   return;  
+}
+
+float
+elapsed_time(clock_t time)
+{
+  long tps = sysconf( _SC_CLK_TCK );
+  return (float)time/tps;
 }
 
 void
@@ -366,8 +405,8 @@ strncasestr(const char *str1, const char *str2, size_t len)
     return NULL;
   } 
 
-  for(i = 0; i < (str1_len - str2_len + 1); i++){
-    if(strncasecmp(str1, str2, str2_len) == 0){
+  for (i = 0; i < (str1_len - str2_len + 1); i++) {
+    if (strncasecmp(str1, str2, str2_len) == 0) {
         return str1;
     }
     str1++;

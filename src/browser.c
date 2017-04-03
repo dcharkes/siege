@@ -34,7 +34,10 @@
 #include <array.h>
 #include <util.h>
 #include <parser.h>
+#include <perl.h>
 #include <response.h>
+#include <memory.h>
+#include <notify.h>
 #include <browser.h>
 
 #if defined(hpux) || defined(__hpux) || defined(WINDOWS)
@@ -414,7 +417,7 @@ private BOOLEAN
 __http(BROWSER this, URL U)
 {
   unsigned long bytes  = 0;
-  int      code, fail;
+  int      code, okay, fail;
   float    etime;
   clock_t  start, stop;
   struct   tms t_start, t_stop;
@@ -450,7 +453,7 @@ __http(BROWSER this, URL U)
   }
 
   if (url_get_scheme(U) == UNSUPPORTED) {
-    if (my.verbose && !my.get) {
+    if (my.verbose && !my.get && !my.print) {
       NOTIFY (
         ERROR,
         "%s %d %6.2f secs: %7d bytes ==> %s\n",
@@ -467,7 +470,7 @@ __http(BROWSER this, URL U)
   /**
    * write to socket with a GET/POST/PUT/DELETE/HEAD
    */
-  if (url_get_method(U) == POST) {
+  if (url_get_method(U) == POST || url_get_method(U) == PUT || url_get_method(U) == PATCH) {
     if ((http_post(this->conn, U)) == FALSE) {
       this->conn->connection.reuse = 0;
       socket_close(this->conn);
@@ -491,10 +494,33 @@ __http(BROWSER this, URL U)
     return FALSE;
   }
 
+  code = response_get_code(resp);
+
+  if (code == 418) {
+    /**
+     * I don't know what server we're talking to but I 
+     * know what it's not. It's not an HTTP server....
+     */
+    this->conn->connection.reuse = 0;
+    socket_close(this->conn);
+    stop  =  times(&t_stop);
+    etime =  elapsed_time(stop - start);
+    this->hits ++;
+    this->time += etime;
+    this->fail += 1;
+
+    __display_result(this, resp, U, 0, etime);
+    resp = response_destroy(resp);
+    return FALSE;
+  }
+
   bytes = http_read(this->conn, resp);
+  if (my.print) {
+    printf("%s\n", page_value(this->conn->page));
+  }
 
   if (my.parser == TRUE) {
-    if (strmatch(response_get_content_type(resp), "text/html") && response_get_code(resp) < 300) {
+    if (strmatch(response_get_content_type(resp), "text/html") && code < 300) {
       int   i;
       html_parser(this->parts, U, page_value(this->conn->page));
       for (i = 0; i < (int)array_length(this->parts); i++) {
@@ -517,16 +543,16 @@ __http(BROWSER this, URL U)
   }
   stop     =  times(&t_stop);
   etime    =  elapsed_time(stop - start);
-  code     =  response_success(resp);
+  okay     =  response_success(resp);
   fail     =  response_failure(resp);
   /**
    * quantify the statistics for this client.
    */
   this->bytes += bytes;
   this->time  += etime;
-  this->code  += code;
+  this->code  += okay;
   this->fail  += fail;
-  if (response_get_code(resp) == 200) {
+  if (code == 200) {
     this->okay++;
   }
  
@@ -554,7 +580,7 @@ __http(BROWSER this, URL U)
     socket_close(this->conn);
   }
 
-  switch (response_get_code(resp)) {
+  switch (code) {
     case 200:
       if (meta != NULL && strlen(meta) > 2) {
         /**
@@ -592,11 +618,11 @@ __http(BROWSER this, URL U)
         if (empty(url_get_hostname(redirect_url))) {
           url_set_hostname(redirect_url, url_get_hostname(U));
         }
-        if (response_get_code(resp) == 307) {
+        if (code == 307) {
           url_set_conttype(redirect_url,url_get_conttype(U));
           url_set_method(redirect_url, url_get_method(U));
 
-          if (url_get_method(redirect_url) == POST) {
+          if (url_get_method(redirect_url) == POST || url_get_method(redirect_url) == PUT || url_get_method(redirect_url) == PATCH) {
             url_set_postdata(redirect_url, url_get_postdata(U), url_get_postlen(U));
           }
         }
@@ -771,7 +797,7 @@ __ftp(BROWSER this, URL U)
       return FALSE;
     }
   }
-  if (url_get_method(U) == POST || url_get_method(U) == PUT) {
+  if (url_get_method(U) == POST || url_get_method(U) == PUT || url_get_method(U) == PATCH) {
     ftp_stor(this->conn, U);
     bytes = ftp_put(D, U);
     code  = this->conn->ftp.code;
@@ -825,7 +851,7 @@ __init_connection(BROWSER this, URL U)
   this->conn->pos_ini              = 0;
   this->conn->inbuffer             = 0;
   this->conn->content.transfer     = NONE;
-  this->conn->content.length       = 0;
+  this->conn->content.length       = (size_t)~0L;// VL - issue #2, 0 is a legit.value
   this->conn->connection.keepalive = (this->conn->connection.max==1)?0:my.keepalive;
   this->conn->connection.reuse     = (this->conn->connection.max==1)?0:my.keepalive;
   this->conn->connection.tested    = (this->conn->connection.tested==0)?1:this->conn->connection.tested;
@@ -927,7 +953,7 @@ __display_result(BROWSER this, RESPONSE resp, URL U, unsigned long bytes, float 
   /**
    * verbose output, print statistics to stdout
    */
-  if ((my.verbose && !my.get) && (!my.debug)) {
+  if ((my.verbose && !my.get && !my.print) && (!my.debug)) {
     int  color   = (my.color == TRUE) ? __select_color(response_get_code(resp)) : -1;
     DATE date    = new_date(NULL);
     char *stamp  = (my.timestamp)?date_stamp(date):"";

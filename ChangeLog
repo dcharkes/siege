@@ -1,6 +1,74 @@
 To email a contributor remove "DELETE" from the email address.
 (The DELETEs are necessary as this list is published online.)
 
+2016/11/02 Jeffrey Fulmer http://www.joedog.org/support/
+ * doc/siegerc.in         Changed the default delay to zero point zero
+ * src/cache.c            Implement disable cache option
+ * src/browser.c          Reduce dependence on hash lookups
+ * src/version.c          Version increment: 4.0.3rc4
+
+2016/11/02 Jeffrey Fulmer http://www.joedog.org/support/
+ * src/load.c             Fixed a bug in content-type selection
+ * src/util.c             Formatting enhancements
+ * src/version.c          Version increment: 4.0.3rc3
+
+Anton Blanchard https://github.com/antonblanchard
+ * util/config.guess      Updated to the latest upstream version
+ * util/config.sub        Updated to the latest upstream version
+
+2016/10/20 David Morán https://github.com/david-moran
+ * src/browser.c          Added PATCH conditionals
+ * src/url.h              Added PATCH to enum
+ * src/url.c              Added PATCH parsing
+ * src/version.c          Version increment: 4.0.3rc2
+
+2016/10/20 Jeffrey Fulmer http://www.joedog.org/support/
+ * src/setup.h            Added my.print, my.nofollow, my.noparser
+ * src/main.c             Added --print, --no-follow, --no-parser
+ * src/browser.c          Added support for new cmd line options
+ * src/http.c             Added support for new cmd line options
+
+2016/09/10 Jeffrey Fulmer http://www.joedog.org/support/
+ * Based on a bug report from Lennart Braun
+ * src/response.c         Added integrity checks in success|failure
+ * src/http.c             Added handling for non-HTTP servers
+ * src/browser.c          Added handling for non-HTTP servers
+ * src/version.c          Version increment: 4.0.3rc1
+
+2016/08/29 Jeffrey Fulmer http://www.joedog.org/support/
+2016/08/29 Aaron Peschel  https://github.com/apeschel
+2016/08/29 Wuvist         https://github.com/Wuvist
+2016/08/29 Christian Blades <cblades@pindropsecurity.com>
+ * src/parser.c           Added a check to ensure aid is not NULL
+ * utils/bombardment.in   Switched to BSD date format 
+ * doc/siegerc.in         Fixed typo in the config file template
+ * src/browser.c          Enable payload for PUT request
+
+2016/05/07 Jeffrey Fulmer <http://www.joedog.org/support/>
+ * SIEGE RELEASE          RELEASE_4-0-2-MAY-20-2016
+ * src/version.c          Version increment: 4.0.2
+
+2016/05/20 Danylo Hlynskyi <https://github.com/danbst>
+ * doc/siege.pod          Documentation improvements
+
+2016/05/07 Jeffrey Fulmer <http://www.joedog.org/support/>
+ * SIEGE RELEASE          RELEASE_4-0-2-beta2-MAY-07-2016
+ * lib/joedog             Moved to src
+ * src/perl.c             Moved from lib/joedog
+ * src/perl.h             Moved from lib/joedog
+ * src/memory.c           Moved from lib/joedog
+ * src/memory.h           Moved from lib/joedog
+ * src/notify.c           Moved from lib/joedog
+ * src/notify.h           Moved from lib/joedog
+ * src/*.c *.h            Decoupled lib/joedog.la
+ * src/version.c          Version increment: 4.0.2-beta2
+
+2016/04/23 Valery Levental <vlevental@paloaltonetDELETEworks.com>
+ * src/browser.c          Fixed issue with Content-length: 0
+ * src/http.c             Improved handling of chunked transfers
+ * src/parser.c           Improved handling of data URI scheme
+ * src/sock.c             Code optimization
+
 2016/03/26 Warren Young <https://github.com/wyoung>
  * src/cookie.c           Fixed delimiter handling in cookie expiration
  			  Suppressed cookie time zone offsetting for GMT/UTC

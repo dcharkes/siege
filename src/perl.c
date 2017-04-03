@@ -109,7 +109,7 @@ valid(const char *s)
   }
 }
 
-int 
+BOOLEAN 
 empty(const char *s)
 {
   if(!s) return 1;

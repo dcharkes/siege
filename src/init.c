@@ -25,11 +25,15 @@
 #include <util.h>
 #include <hash.h>
 #include <eval.h>
+#include <perl.h>
+#include <memory.h>
+#include <notify.h>
 #include <fcntl.h>
+#include <stralloc.h>
 #include <version.h>
 #include <joedog/boolean.h>
+#include <joedog/path.h>
 #include <joedog/defs.h>
-#include <joedog/joedog.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -215,6 +219,7 @@ show_config(int EXIT)
   else
     printf("repetitions:                    n/a\n" );
   printf("socket timeout:                 %d\n", my.timeout);
+  printf("cache enabled:                  %s\n", my.cache==TRUE ? "true" : "false");
   printf("accept-encoding:                %s\n", my.encoding);
   printf("delay:                          %.3f sec%s\n", my.delay, (my.delay > 1) ? "s" : "");
   printf("internet simulation:            %s\n", my.internet?"true":"false");

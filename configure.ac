@@ -332,6 +332,7 @@ AC_CHECK_FUNCS(snprintf)
 AC_CHECK_FUNCS(strdup)
 AC_CHECK_FUNCS(rand_r)
 AC_CHECK_FUNCS(localtime_r)
+AC_CHECK_FUNCS(gethostbyname_r)
 AC_CHECK_FUNCS(gmtime_r)
 AC_CHECK_FUNCS(getipnodebyname)
 AC_CHECK_FUNCS(freehostent)
@@ -407,7 +408,7 @@ dnl
 dnl Create <joedog/joepath.h> header file
 dnl
 AC_OUTPUT_COMMANDS([
-	outfile=include/joedog/joepath.h
+	outfile=include/joedog/path.h
 	tmpfile=${outfile}
 	cat > $tmpfile << _EOF_
 /**
@@ -432,8 +433,8 @@ AC_OUTPUT_COMMANDS([
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  */
-#ifndef  JOEPATH_H
-#define  JOEPATH_H
+#ifndef  JOEDOG_PATH_H
+#define  JOEDOG_PATH_H
 
 #define SIEGE_HOME     "$prefix"
 #define URL_FILE       "$sysconfdir/urls.txt"
@@ -441,12 +442,10 @@ AC_OUTPUT_COMMANDS([
 #define LOG_FILE       "$localstatedir/log/siege.log"
 #define PLATFORM       "$platform"
 
-#endif/*JOEPATH_H*/
+#endif/*JOEDOG_PATH_H*/
 _EOF_
 ], [ prefix=$prefix sysconfdir=$sysconfdir localstatedir=$localstatedir platform=$PLATFORM ])
 
-echo "PLATFORM: $PLATFORM"
-echo "PROGRAM: $PROGRAM"
 dnl
 dnl update dates and versioning in doc
 dnl
@@ -520,7 +519,7 @@ $PLATFORM
 _EOF_
 ], [PLATFORM=$PLATFORM])
 
-AC_OUTPUT(Makefile src/Makefile doc/Makefile html/Makefile lib/Makefile lib/joedog/Makefile include/Makefile include/joedog/Makefile utils/Makefile)
+AC_OUTPUT(Makefile src/Makefile doc/Makefile html/Makefile include/Makefile include/joedog/Makefile utils/Makefile)
 
 echo
 echo "--------------------------------------------------------"

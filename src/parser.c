@@ -32,7 +32,7 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <array.h>
-#include <joedog/joedog.h>
+#include <memory.h>
 #include <joedog/defs.h>
 
 #define CONTROL_TOKENS      " ="
@@ -171,7 +171,7 @@ __parse_control(ARRAY array, URL base, char *html)
       }
     } else if (strncasecmp(ptr, "img", 3) == 0) {
       ptr = strtok_r(NULL, CONTROL_TOKENS, &aid);
-      if (ptr != NULL) {
+      if (ptr != NULL && aid != NULL) {
         if (! strncasecmp(aid, "\"\"", 2)) {
           // empty string, i.e., img src=""
           continue;
@@ -179,6 +179,8 @@ __parse_control(ARRAY array, URL base, char *html)
         if (! strncasecmp(ptr, "src", 3)) {
           ptr = strtok_r(NULL, CONTROL_TOKENS_QUOTES, &aid);
           if (ptr != NULL) { 
+			if ( !strncasecmp(ptr, "data:image", 10) ) 
+				continue;	//VL issue #1
             URL U = url_normalize(base, ptr);
             if (debug) printf("2.) Adding: %s\n", url_get_absolute(U));
             if (! endswith("+", url_get_absolute(U))) {
@@ -189,7 +191,7 @@ __parse_control(ARRAY array, URL base, char *html)
           for (ptr = strtok_r(NULL, CONTROL_TOKENS, &aid); ptr != NULL; ptr = strtok_r(NULL, CONTROL_TOKENS, &aid)) {
             if ((ptr != NULL) && (strncasecmp(ptr, "src", 3) == 0)) {        
               ptr = strtok_r(NULL, CONTROL_TOKENS_QUOTES, &aid);
-              if (ptr != NULL && strlen(ptr) > 1) { 
+              if (ptr != NULL && strlen(ptr) > 1 && strncasecmp(ptr, "data:image", 10)) { //VL issue #1
                 URL U = url_normalize(base, ptr);
                 if (debug) printf("3.) Adding: %s\n", url_get_absolute(U));
                 __add_url(array, U);

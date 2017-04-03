@@ -23,6 +23,16 @@
 #ifndef NOTIFY_H
 #define NOTIFY_H 
 
+#define UNCOLOR   -1
+#define BLACK      0
+#define RED        1
+#define GREEN      2
+#define YELLOW     3
+#define BLUE       4
+#define MAGENTA    5
+#define CYAN       6
+#define WHITE      7
+
 typedef enum {
   DEBUG     = 0,
   WARNING   = 1,
@@ -32,6 +42,7 @@ typedef enum {
 
 void OPENLOG(char *program_name);
 void CLOSELOG(void);  
+void DISPLAY(int color, const char *fmt, ...);
 void SYSLOG(LEVEL L, const char *fmt, ...);
 void NOTIFY(LEVEL L, const char *fmt, ...);
 
