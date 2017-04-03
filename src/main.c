@@ -517,7 +517,7 @@ main(int argc, char *argv[])
 
   pthread_usleep_np(10000);
 
-  if (!my.quiet) {
+//  if (!my.quiet) {
     if (my.failures > 0 && my.failed >= my.failures) {
       fprintf(stderr, "%s aborted due to excessive socket failure; you\n", program_name);
       fprintf(stderr, "can change the failure threshold in $HOME/.%src\n", program_name);
@@ -541,7 +541,7 @@ main(int argc, char *argv[])
     fprintf(stderr, "Longest transaction:\t%12.2f\n",        data_get_highest(data));
     fprintf(stderr, "Shortest transaction:\t%12.2f\n",       data_get_lowest(data));
     fprintf(stderr, " \n");
-  }
+//  }
   if (my.mark)    mark_log_file(my.markstr);
   if (my.logging) {
     log_transaction(data);
